@@ -2,7 +2,7 @@ import clipboard from "clipboardy";
 import open from "open";
 import { terminal } from "terminal-kit";
 import chalk from "chalk";
-import type { AugmentedLaunch } from "./index";
+import type { AugmentedLaunch } from "./get_launches";
 
 const launches = await Bun.file("launches.json", { type: "application/json" }).json() as Record<string, AugmentedLaunch>
 const launches_without_sent_comment = Object.values(launches).filter(launch => !launch.sent_comment)

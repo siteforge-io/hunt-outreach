@@ -1,5 +1,7 @@
 import puppeteer, { Page } from "puppeteer";
 
+const DAY = 16;
+const MONTH = 4;
 
 export type Launch = {
   title: string
@@ -169,11 +171,10 @@ async function export_launches(month: number, day: number): Promise<void> {
 // console.log(await get_maker(PRODUCT_HUNT_URL + "/@benln"));
 // console.log(await get_launches(4, 16));
 
-await export_launches(4, 16);
+await export_launches(MONTH, DAY);
 
 await browser.close();
 await Promise.all((await browser.pages()).map(page => page.close()));
-
 
 async function batch_promises<T>(create_promises: (() => Promise<T>)[], concurrency: number): Promise<T[]> {
   const results: T[] = [];
