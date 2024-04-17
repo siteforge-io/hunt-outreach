@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import type { AugmentedLaunch, Launch, Maker } from "./index";
+import type { AugmentedLaunch, Launch, Maker } from "./get_launches";
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
