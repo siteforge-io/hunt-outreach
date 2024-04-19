@@ -11,7 +11,8 @@ export type Launch = {
   maker_comment: string | null
   product: Product | null
   day_rank: string
-  categories: string[]
+  categories: string[],
+  upvotes: string
 }
 
 export type AugmentedLaunch = Launch & {
@@ -68,6 +69,7 @@ async function get_launch(url: string): Promise<Launch> {
     title: await page.$eval(".styles_title__x5KUY", element => element?.textContent!),
     description: await page.$eval(".styles_htmlText__eYPgj", element => element?.textContent!),
     product: product_url ? await get_product(PRODUCT_HUNT_URL + product_url) : null,
+    upvotes: await page.$$eval(".mb-10 .text-dark-grey", elements => elements[0].textContent!),
     day_rank: await page.$$eval(".mb-10 .text-dark-grey", elements => elements[2].textContent!),
     categories: await page.$$eval(".styles_topicItem__yQEki .styles_subnavLinkText__WGIz0", elements => elements.map(el => el.textContent!)),
   }
