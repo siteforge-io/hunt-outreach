@@ -1,6 +1,6 @@
 import puppeteer, { Page } from "puppeteer";
 
-const DAY = 16;
+const DAY = 17;
 const MONTH = 4;
 
 export type Launch = {
@@ -37,6 +37,11 @@ export type Maker = {
   twitter_dm_post_launch?: string,
 }
 
+// create the launches.json file if it doesn't exist
+if (!await Bun.file("launches.json", { type: "application/json" }).exists()) {
+  await Bun.write("launches.json", "{}")
+}
+
 const PRODUCT_HUNT_URL = "https://www.producthunt.com";
 console.log("Starting browser");
 const browser = await puppeteer.launch({ headless: true });
@@ -54,7 +59,7 @@ async function get_launch(url: string): Promise<Launch> {
     ? await first_comment_handler?.$eval(".styles_htmlText__eYPgj", element => element?.textContent) || null
     : null;
 
-  let product_url = await page.$eval("#about a[href^='/products/'].text-dark-grey.styles_noOfLines-1__u8iSd", element => element?.getAttribute("href")).catch(() => null);
+  let product_url = await page.$eval("ol.flex-row li a[href^='/products/'].text-12.font-normal.text-light-grey", element => element?.getAttribute("href")).catch(() => null);
 
   return {
     launch_url: url,
@@ -80,7 +85,7 @@ async function get_product(url: string): Promise<Product> {
   return {
     product_url: url,
     website_url: await page.$eval(".styles_buttons__kKy_S a.styles_primary__o9u3f", element => element?.getAttribute("href")!),
-    makers: await Promise.all(maker_urls.slice(0, 3).map(url => get_maker(PRODUCT_HUNT_URL + url))),
+    makers: await Promise.all(maker_urls.slice(0, 4).map(url => get_maker(PRODUCT_HUNT_URL + url))),
   }
 }
 
@@ -102,7 +107,7 @@ async function get_maker(url: string): Promise<Maker> {
   }
 }
 
-async function get_launches(month: number, day: number): Promise<AugmentedLaunch[]> {
+async function get_launches(month: number, day: number, existing_launches: string[]): Promise<AugmentedLaunch[]> {
   const page = await browser.newPage();
   page.setViewport({ width: 1400, height: 1000 });
   await page.goto(PRODUCT_HUNT_URL + `/leaderboard/daily/2024/${month}/${day}/all`, { waitUntil: "load" });
@@ -113,7 +118,9 @@ async function get_launches(month: number, day: number): Promise<AugmentedLaunch
   let launch_urls = await page.$$eval(".styles_item__Dk_nz .styles_titleContainer__qZRNa a[href^='/posts/']", elements => elements.map(el => el.getAttribute("href")!));
 
   console.log("Found", launch_urls.length, "launches");
-  launch_urls = launch_urls.slice(0, 30);
+  launch_urls = launch_urls
+    // .slice(0, 40) // uncomment to limit the number of launches
+    .filter(url => !existing_launches.includes(url))
   console.log("Getting first 30 launches");
 
   const launches = await batch_promises(launch_urls.map(url => async () => await get_launch(PRODUCT_HUNT_URL + url)), 3);
@@ -147,7 +154,7 @@ async function autoScroll(page: Page): Promise<void> {
 async function export_launches(month: number, day: number): Promise<void> {
   const existing_launches: Record<string, AugmentedLaunch> = await Bun.file("launches.json", { type: "application/json" }).json();
 
-  const new_launches = await get_launches(month, day);
+  const new_launches = await get_launches(month, day, Object.keys(existing_launches));
 
   for (const launch of new_launches) {
     if(existing_launches[launch.launch_url]) {
@@ -166,7 +173,7 @@ async function export_launches(month: number, day: number): Promise<void> {
   await Bun.write("launches.json", JSON.stringify(existing_launches, null, 4));
 }
 
-// console.log(await get_launch(PRODUCT_HUNT_URL + "/posts/seomaker"));
+// console.log(await get_launch(PRODUCT_HUNT_URL + "/posts/ahdeck"));
 // console.log(await get_product(PRODUCT_HUNT_URL + "/products/draftboard"));
 // console.log(await get_maker(PRODUCT_HUNT_URL + "/@benln"));
 // console.log(await get_launches(4, 16));

@@ -44,7 +44,7 @@ for (const launch of launches_without_sent_comment) {
         maker.sent_twitter_dm = true
     }
 
-    await Bun.write("launches.json", JSON.stringify(launches, null, 4))
+    // await Bun.write("launches.json", JSON.stringify(launches, null, 4))
 }
 
 terminal.clear()
