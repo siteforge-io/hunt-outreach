@@ -117,11 +117,11 @@ async function get_launches(month: number, day: number, existing_launches: strin
 
   let launch_urls = await page.$$eval(".styles_item__Dk_nz .styles_titleContainer__qZRNa a[href^='/posts/']", elements => elements.map(el => el.getAttribute("href")!));
 
-  console.log("Found", launch_urls.length, "launches");
   launch_urls = launch_urls
-    // .slice(0, 40) // uncomment to limit the number of launches
-    .filter(url => !existing_launches.includes(url))
-  console.log("Getting first 30 launches");
+  // .slice(0, 40) // uncomment to limit the number of launches
+  .filter(url => !existing_launches.includes(url))
+
+  console.log("Found", launch_urls.length, "launches");
 
   const launches = await batch_promises(launch_urls.map(url => async () => await get_launch(PRODUCT_HUNT_URL + url)), 3);
 
