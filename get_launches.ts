@@ -1,7 +1,8 @@
 import puppeteer, { Page } from "puppeteer";
 
-const DAY = 17;
+const DAY = 22;
 const MONTH = 4;
+const NUM_POSTS_TO_LOAD = -1;
 
 export type Launch = {
   title: string
@@ -60,19 +61,23 @@ async function get_launch(url: string): Promise<Launch> {
     ? await first_comment_handler?.$eval(".styles_htmlText__eYPgj", element => element?.textContent) || null
     : null;
 
-  let product_url = await page.$eval("ol.flex-row li a[href^='/products/'].text-12.font-normal.text-light-grey", element => element?.getAttribute("href")).catch(() => null);
+  let product_url = await page.$eval(".styles_container__PKi5n ol li a[href^='/products/']", element => element?.getAttribute("href")).catch(() => null);
 
-  return {
+  const launch = {
     launch_url: url,
     maker_comment: maker_comment,
     tagline: await page.$eval(".styles_tagline__svEiR", element => element?.textContent!),
     title: await page.$eval(".styles_title__x5KUY", element => element?.textContent!),
     description: await page.$eval(".styles_htmlText__eYPgj", element => element?.textContent!),
     product: product_url ? await get_product(PRODUCT_HUNT_URL + product_url) : null,
-    upvotes: await page.$$eval(".mb-10 .text-dark-grey", elements => elements[0].textContent!),
-    day_rank: await page.$$eval(".mb-10 .text-dark-grey", elements => elements[2].textContent!),
-    categories: await page.$$eval(".styles_topicItem__yQEki .styles_subnavLinkText__WGIz0", elements => elements.map(el => el.textContent!)),
+    upvotes: await page.$$eval(".mb-10 .text-dark-grey", elements => elements?.[0]?.textContent!),
+    day_rank: await page.$$eval(".mb-10 .text-dark-grey", elements => elements?.[2]?.textContent!),
+    categories: await page.$$eval(".styles_topicItem__yQEki .styles_subnavLinkText__WGIz0", elements => elements.map(el => el?.textContent!)),
   }
+
+  await page.close()
+
+  return launch;
 }
 
 
@@ -84,11 +89,13 @@ async function get_product(url: string): Promise<Product> {
 
   const maker_urls = await page.$$eval("a.styles_userImage__PmH_6", elements => elements.map(el => el.getAttribute("href")));
 
-  return {
+  const product = {
     product_url: url,
     website_url: await page.$eval(".styles_buttons__kKy_S a.styles_primary__o9u3f", element => element?.getAttribute("href")!),
     makers: await Promise.all(maker_urls.slice(0, 4).map(url => get_maker(PRODUCT_HUNT_URL + url))),
   }
+  await page.close()
+  return product;
 }
 
 
@@ -100,13 +107,15 @@ async function get_maker(url: string): Promise<Maker> {
 
   const links = await page.$$eval(".styles_userLink__eDq16", elements => elements.map(el => el.getAttribute("href") || "https://google.com"))
 
-  return {
+  const maker = {
     founder_url: url,
     name: await page.$eval("h1", element => element?.textContent!),
-    bio: await page.$eval(".text-18.font-light.text-light-grey.mb-1", element => element?.textContent || null),
+    bio: await page.$eval(".text-18.font-light.text-light-grey.mb-1", element => element?.textContent || null).catch(() => null),
     founder_twitter: links.find(link => ["twitter.com", "x.com"].includes(new URL(link).hostname)) || null,
     // founder_linkedin: links.find(link => new URL(link).hostname === "linkedin.com") || null,
   }
+  await page.close()
+  return maker;
 }
 
 async function get_launches(month: number, day: number, existing_launches: string[]): Promise<AugmentedLaunch[]> {
@@ -120,10 +129,12 @@ async function get_launches(month: number, day: number, existing_launches: strin
   let launch_urls = await page.$$eval(".styles_item__Dk_nz .styles_titleContainer__qZRNa a[href^='/posts/']", elements => elements.map(el => el.getAttribute("href")!));
 
   launch_urls = launch_urls
-  // .slice(0, 40) // uncomment to limit the number of launches
+  .slice(0, NUM_POSTS_TO_LOAD) // uncomment to limit the number of launches
   .filter(url => !existing_launches.includes(url))
 
   console.log("Found", launch_urls.length, "launches");
+
+  await page.close()
 
   const launches = await batch_promises(launch_urls.map(url => async () => await get_launch(PRODUCT_HUNT_URL + url)), 3);
 

@@ -120,6 +120,7 @@ const launch: Launch = {
         "Newsletters",
         "Artificial Intelligence"
     ],
+    "upvotes": "1"
     // "generated_comment": null,
     // "sent_comment": false,
     // "sent_twitter_dm": false
@@ -128,7 +129,7 @@ const launch: Launch = {
 async function update_launch_generations(launch: AugmentedLaunch) {
     if(!launch.generated_comment) launch.generated_comment = await createProductHuntComment(launch)
     for (let maker of launch?.product?.makers || []) {
-        if(!maker.twitter_dm_pre_launch) maker.twitter_dm_pre_launch = await generateTwitterDM(maker, launch)
+        if(!maker.twitter_dm_pre_launch && maker.founder_twitter) maker.twitter_dm_pre_launch = await generateTwitterDM(maker, launch)
     }
 }
 

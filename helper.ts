@@ -36,7 +36,7 @@ for (const launch of launches_without_sent_comment) {
     for (const maker of makers) {
         m_i++
         if(maker.sent_twitter_dm || !maker.founder_twitter) continue
-        terminal.moveTo(1, 2, chalk.magenta(`    ${m_i}/${(launch.product?.makers || []).length }`), chalk.gray(" makers left to process\n"))
+        terminal.moveTo(1, 2, chalk.magenta(`    ${m_i}/${makers.length }`), chalk.gray(" makers left to process\n"))
         clipboard.writeSync(maker.twitter_dm_pre_launch!)
         await open(maker.founder_twitter!)
         terminal(chalk.grey("    Press "), chalk.green("ANY KEY"), chalk.grey(" to mark twitter DM as sent\n"))
