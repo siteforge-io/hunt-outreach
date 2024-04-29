@@ -16,10 +16,11 @@ async function createProductHuntComment(launch: Launch): Promise<string> {
 - Create a personalized Product Hunt comment for their product launch
 - Congradulate the founder(s) on their launch
 - Ask an engaging question if suitable
-- Don't wrap your response in quotes
-- Don't use emojis or hashtags
-- Don't say we use their tool or want to collaborate
-- Don't write a cringey or superfluous comment
+- Do not wrap your response in quotes
+- Do not use emojis, exclamation marks, or hashtags
+- Write in lowercase
+- Do not call the product "game changing", "revolutionary" etc, or any other cringey or superfluous words
+- Do not say we use their tool or want to collaborate
 
 # Context
 I am also a founder with an upcoming launch on product hunt, called SiteForge, an AI powered website generation tool (wireframing, sitemap generation, SEO optimised branded content generation)`
@@ -56,7 +57,8 @@ async function generateTwitterDM(maker: Maker, launch: Launch): Promise<string> 
 `# Instructions
 - Create a personalized Twitter direct message for the founder of this product hunt launch, with the goal of getting their support on our upcoming launch in 2-3 weeks (SiteForge)
 - Personalise the message to the maker and the launch
-- Do not use emojis, hash tags
+- Do not use emojis, hash tags, exclamation marks in the message
+- Write in lowercase
 - Do not say we use their tool, or "want to collaborate"
 - Your response should not be wrapped in quotes
 - Use the example generic DM as a reference of the tone and style we want, but don't copy it and make sure it's personalised.
